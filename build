@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo docker build -f Dockerfile.base -t conservify/monitor .
+sudo docker build -f Dockerfile.web -t conservify/monitor-web .
+sudo docker build -f Dockerfile.cli -t conservify/monitor-cli .

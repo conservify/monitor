@@ -1,0 +1,3 @@
+FROM conservify/monitor
+ENTRYPOINT ["python"]
+CMD ["web.py"]

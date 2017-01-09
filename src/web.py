@@ -1,9 +1,11 @@
 import sys
 import logging
 import os
+import io
 import threading
 import atexit
 import shelve
+import struct
 
 from database import MonitorDatabase
 
@@ -48,13 +50,38 @@ def logs():
     app.logger.info(data)
     return 'Ok'
 
+def decode_varint(stream):
+    """Read a varint from `stream`"""
+    shift = 0
+    value = 0
+    while True:
+        i = ord(stream.read(1))
+        value |= (i & 0x7f) << shift
+        shift += 7
+        if not (i & 0x80):
+            break
+    return value
+
+def decode_blob(buffer):
+    stream = io.BytesIO(buffer)
+    id = decode_varint(stream)
+    time = decode_varint(stream)
+    fields = [time,'NGD'] + list(struct.unpack('f' * 7, stream.read(4 * 7)))
+    return ','.join([str(x) for x in fields])
+
 @app.route('/monitor/rockblock', methods=['GET', 'POST'])
 def rockblock():
     serial = request.form['serial']
     time = parser.parse(request.form['transmit_time'], yearfirst=True)
-    data = request.form['data'].decode('hex').decode('utf-8')
-    app.logger.info([serial, time, data])
-    transmissions.rockblock(serial, time, data)
+    try:
+        data = request.form['data'].decode('hex').decode('utf-8')
+        app.logger.info([serial, time, data])
+        transmissions.rockblock(serial, time, data)
+    except UnicodeDecodeError:
+        blob = request.form['data'].decode('hex')
+        data = decode_blob(blob)
+        app.logger.info([serial, time, data])
+        transmissions.rockblock(serial, time, data)
     return 'Ok'
 
 @app.route('/monitor/particle', methods=['GET', 'POST'])

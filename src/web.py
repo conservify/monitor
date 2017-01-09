@@ -40,6 +40,14 @@ def welcome():
         app.logger.info(data)
         return jsonify({ 'transmissions': data })
 
+@app.route('/monitor/logs', methods=['GET', 'POST'])
+def logs():
+    data = request.data
+    with open("/app/data/wifi.log", "a") as log:
+        log.write(data)
+    app.logger.info(data)
+    return 'Ok'
+
 @app.route('/monitor/rockblock', methods=['GET', 'POST'])
 def rockblock():
     serial = request.form['serial']

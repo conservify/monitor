@@ -1,5 +1,5 @@
 #!/bin/bash
 
-source envs
+source config
 
 sudo docker run -e "SLACK_API_TOKEN=$SLACK_API_TOKEN" -v monitor-data:/app/data --rm -p 49002:5000 conservify/monitor-web

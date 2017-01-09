@@ -46,13 +46,14 @@ class RockBlockParser(Parser):
         ('A1', 11): NoopSubParser(),
         ('A1', 6): NoopSubParser(),
         ('A3', 6): NoopSubParser(),
+        ('A3', 8): NoopSubParser(),
+        ('A3', 11): NoopSubParser(),
     }
 
     def parse(self, transmission):
         fields = transmission['data'].split(',')
         number_of_fields = len(fields)
         if number_of_fields <= 1:
-            print transmission, fields
             return None
         parser = RockBlockParser.parsers[(fields[1], number_of_fields)]
         return parser.parse(transmission, fields)

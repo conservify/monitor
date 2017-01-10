@@ -17,8 +17,8 @@ class NatGeoDemoSubParser(Parser):
             'source': transmission['source'],
             'age': float(transmission['age']),
             'name': fields[1],
-            'latitude': float(fields[2]),
-            'longitude': float(fields[3]),
+            'lat': float(fields[2]),
+            'lon': float(fields[3]),
             'altitude': float(fields[4]),
             'temperature': float(fields[5]),
             'humidity': float(fields[6]),
@@ -37,6 +37,8 @@ class NoopSubParser(Parser):
             'age': float(transmission['age']),
             'battery': 0.0,
             'charge': 0.0,
+            'lat': 0.0,
+            'lon': 0.0
         }
 
 class RockBlockParser(Parser):

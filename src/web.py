@@ -9,6 +9,8 @@ import struct
 
 from database import MonitorDatabase
 
+# Get current time
+from datetime import datetime
 from dateutil import parser
 from logging.handlers import RotatingFileHandler
 from flask import Flask, request, jsonify
@@ -28,6 +30,9 @@ class Transmissions:
 
     def particle(self, instance, time, data):
         self.save(instance, time, data, 'particle')
+
+    def twilio(self, instance, time, data):
+        self.save(instance, time, data, 'twilio')
 
 slack_token = os.environ["SLACK_API_TOKEN"]
 sc = SlackClient(slack_token)
@@ -95,6 +100,15 @@ def particle():
     data = request.form['data']
     app.logger.info([serial, time, data])
     transmissions.particle(serial, time, data)
+    return 'Ok'
+
+@app.route('/monitor/twilio', methods=['GET', 'POST'])
+def twilio():
+    serial = request.form['From'];
+    time = datetime.now()
+    data = request.form['Body'];
+    app.logger.info([serial, time, data])
+    transmissions.twilio(serial, time, data)
     return 'Ok'
 
 lock = threading.Lock()

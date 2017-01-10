@@ -43,7 +43,8 @@ class NoopSubParser(Parser):
 
 class RockBlockParser(Parser):
     parsers = {
-        ('NGD', 9): NatGeoDemoSubParser(),
+        ('NGD-Shah', 9): NatGeoDemoSubParser(),
+        ('NGD-Jacob', 9): NatGeoDemoSubParser(),
         ('A1', 8): NoopSubParser(),
         ('A1', 11): NoopSubParser(),
         ('A1', 6): NoopSubParser(),
@@ -65,7 +66,8 @@ class ParticleParser(Parser):
         fields = transmission['data'].split(',')
         names = {
             '200051000e51353432393339': 'Jacob',
-            '4f003c000b51343334363138': 'SharkOne'
+            '4f003c000b51343334363138': 'SharkOne',
+            '4d0049000d51353432393339': 'SharkTwo'
         }
         return {
             'id': transmission.get('tid', None),
@@ -77,6 +79,24 @@ class ParticleParser(Parser):
             'charge': float(fields[1]),
             'lat': float(fields[2]),
             'lon': float(fields[3]),
+        }
+
+class TwilioParser(Parser):
+    def parse(self, transmission):
+        fields = transmission['data'].split(',')
+        names = {
+            '+19515438308' : 'Jacob-SMS'
+        }
+        return {
+            'id': transmission.get('tid', None),
+            'age': float(transmission['age']),
+            'time': transmission['time'],
+            'source': transmission['source'],
+            'name': names[transmission['id']],
+            'battery': 0.0,
+            'charge': 0.0,
+            'lat': 0.0,
+            'lon': 0.0,
         }
 
 class MonitorDatabase(object):
@@ -110,7 +130,8 @@ class MonitorDatabase(object):
 
     parsers = {
         'rockblock': RockBlockParser(),
-        'particle': ParticleParser()
+        'particle': ParticleParser(),
+        'twilio': TwilioParser()
     }
 
     def _parse_row(self, row):

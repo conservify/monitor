@@ -108,6 +108,7 @@ def turn_on_checking_thread():
                     for row in rows:
                         if row:
                             lines.append("%s: %smins bat(%f) pos(%f, %f)" % (row['name'], (row['age'] / 60), row['charge'], row['lat'], row['lon']))
+                    lines.sort()
                     sc.api_call(
                         "chat.postMessage",
                         channel="#testing",

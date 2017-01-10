@@ -62,11 +62,15 @@ def decode_varint(stream):
             break
     return value
 
-def decode_blob(buffer):
+def decode_blob(serial, buffer):
+    names = {
+        '10265': 'NGD-Jacob',
+        '11089': 'NGD-Shah',
+    }
     stream = io.BytesIO(buffer)
     id = decode_varint(stream)
     time = decode_varint(stream)
-    fields = [time,'NGD'] + list(struct.unpack('f' * 7, stream.read(4 * 7)))
+    fields = [time, names[serial]] + list(struct.unpack('f' * 7, stream.read(4 * 7)))
     return ','.join([str(x) for x in fields])
 
 @app.route('/monitor/rockblock', methods=['GET', 'POST'])
@@ -79,7 +83,7 @@ def rockblock():
         transmissions.rockblock(serial, time, data)
     except UnicodeDecodeError:
         blob = request.form['data'].decode('hex')
-        data = decode_blob(blob)
+        data = decode_blob(serial, blob)
         app.logger.info([serial, time, data])
         transmissions.rockblock(serial, time, data)
     return 'Ok'
@@ -107,7 +111,7 @@ def turn_on_checking_thread():
                     lines = []
                     for row in rows:
                         if row:
-                            lines.append("%s: %smins bat(%f) pos(%f, %f)" % (row['name'], (row['age'] / 60), row['charge'], row['lat'], row['lon']))
+                            lines.append("%s: %smins bat(%f) pos(%f, %f)" % (row['name'], int(row['age'] / 60), row['charge'], row['lat'], row['lon']))
                     lines.sort()
                     sc.api_call(
                         "chat.postMessage",

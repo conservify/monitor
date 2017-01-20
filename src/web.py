@@ -49,9 +49,10 @@ def welcome():
 
 @app.route('/monitor/logs', methods=['GET', 'POST'])
 def logs():
-    data = request.data
+    data = request.data.replace('\r', '\n')
     with open("/app/data/wifi.log", "a") as log:
         log.write(data)
+        log.write('\n')
     app.logger.info(data)
     return 'Ok'
 
@@ -70,7 +71,9 @@ def decode_varint(stream):
 def decode_blob(serial, buffer):
     names = {
         '10265': 'NGD-Jacob',
-        '11089': 'NGD-Shah',
+        '11089': 'NGD-Demo1',
+        '11099': 'NGD-Demo2',
+        '11102': 'NGD-Shah',
     }
     stream = io.BytesIO(buffer)
     id = decode_varint(stream)
@@ -133,7 +136,7 @@ def turn_on_checking_thread():
                         text="Status Update\n```" + "\n".join(lines) + "\n```"
                     )
                 finally:
-                    start_checking_thread(15 * 60)
+                    start_checking_thread(5 * 60)
 
     def start_checking_thread(delay):
         global checking_thread

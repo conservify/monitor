@@ -44,13 +44,20 @@ class NoopSubParser(Parser):
 class RockBlockParser(Parser):
     parsers = {
         ('NGD-Shah', 9): NatGeoDemoSubParser(),
+        ('NGD-Shah', 10): NatGeoDemoSubParser(),
         ('NGD-Jacob', 9): NatGeoDemoSubParser(),
+        ('NGD-Jacob', 10): NatGeoDemoSubParser(),
+        ('NGD-Demo1', 9): NatGeoDemoSubParser(),
+        ('NGD-Demo1', 10): NatGeoDemoSubParser(),
+        ('NGD-Demo2', 9): NatGeoDemoSubParser(),
+        ('NGD-Demo2', 10): NatGeoDemoSubParser(),
         ('A1', 8): NoopSubParser(),
         ('A1', 11): NoopSubParser(),
         ('A1', 6): NoopSubParser(),
         ('A3', 6): NoopSubParser(),
         ('A3', 8): NoopSubParser(),
         ('A3', 11): NoopSubParser(),
+        ('A2', 6): NoopSubParser(),
     }
 
     def parse(self, transmission):
@@ -67,14 +74,17 @@ class ParticleParser(Parser):
         names = {
             '200051000e51353432393339': 'Jacob',
             '4f003c000b51343334363138': 'SharkOne',
-            '4d0049000d51353432393339': 'SharkTwo'
+            '4d0049000d51353432393339': 'SharkTwo',
+            '250042000e51353432393339': 'SharkThree',
+            '50002e000551353437353039': 'SharkFour',
+            '280040000e51353432393339': 'SharkFive',
         }
         return {
             'id': transmission.get('tid', None),
             'age': float(transmission['age']),
             'time': transmission['time'],
             'source': transmission['source'],
-            'name': names[transmission['id']],
+            'name': names.get(transmission['id'], transmission['id']),
             'battery': float(fields[0]),
             'charge': float(fields[1]),
             'lat': float(fields[2]),
@@ -85,16 +95,21 @@ class TwilioParser(Parser):
     def parse(self, transmission):
         fields = transmission['data'].split(',')
         names = {
-            '+19515438308' : 'Jacob-SMS'
+            '+12039098762' : 'Jacob-Ting-SMS',
         }
+        battery = 0.0
+        charge = 0.0
+        if len(fields) == 10:
+            battery = float(fields[2])
+            charge = float(fields[3]) * 100.0
         return {
             'id': transmission.get('tid', None),
             'age': float(transmission['age']),
             'time': transmission['time'],
             'source': transmission['source'],
             'name': names[transmission['id']],
-            'battery': 0.0,
-            'charge': 0.0,
+            'battery': battery,
+            'charge': charge,
             'lat': 0.0,
             'lon': 0.0,
         }
@@ -115,8 +130,8 @@ class MonitorDatabase(object):
         return self.dbc.execute("SELECT id, time, data, source, (julianday('now') - julianday(time)) * 24 * 60 * 60 AS age FROM latest_transmissions").fetchall()
 
     def add_transmission(self, instance, time, data, source):
-        self.dbc.execute("INSERT OR REPLACE INTO latest_transmissions (id, time, data, source) VALUES (?, ?, ?, ?)", (instance, time, data, source))
-        self.dbc.execute("INSERT INTO transmissions (id, time, data, source) VALUES (?, ?, ?, ?)", (instance, time, data, source))
+        self.dbc.execute("INSERT OR REPLACE INTO latest_transmissions (id, time, data, source) VALUES (?, ?, ?, ?)", (instance, time, data.strip(), source))
+        self.dbc.execute("INSERT INTO transmissions (id, time, data, source) VALUES (?, ?, ?, ?)", (instance, time, data.strip(), source))
         self.dbc.commit()
 
     def close(self):
